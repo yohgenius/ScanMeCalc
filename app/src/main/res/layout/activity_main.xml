@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:background="@color/black"
+    android:orientation="vertical"
+    tools:context=".MainActivity">
+
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+        <androidx.camera.view.PreviewView
+            android:id="@+id/camPreview"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_centerInParent="true"
+            android:visibility="visible" />
+
+        <com.example.textrecognitiontest.TextBoxOverlay
+            android:id="@+id/textBoxOverlay"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_centerInParent="true" />
+
+    </RelativeLayout>
+
+    <LinearLayout
+        style="?android:attr/buttonBarStyle"
+        android:layout_width="match_parent"
+        android:layout_height="220dp"
+        android:layout_gravity="center"
+        android:gravity="center"
+        android:background="@color/white"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/inputLabelTextView"
+            style="?attr/textAppearanceBody2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            android:text="@string/label_detected_input" />
+
+        <TextView
+            android:id="@+id/inputTextView"
+            style="?attr/textAppearanceBody1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
+            tools:text="Input" />
+
+        <View
+            android:id="@+id/divider"
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="@color/green_dark"
+            android:layout_marginHorizontal="32dp"
+            android:layout_marginTop="9dp"/>
+
+        <TextView
+            android:id="@+id/resultTextLabelView"
+            style="?attr/textAppearanceBody1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="9dp"
+            android:text="@string/label_result" />
+
+        <Button
+            android:id="@+id/btn_hitung"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="5dp"
+            android:text="@string/hitung" />
+
+        <Button
+            android:id="@+id/buttonPickImage"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="5dp"
+            android:text="Cari gambar" />
+
+    </LinearLayout>
+
+
+</LinearLayout>

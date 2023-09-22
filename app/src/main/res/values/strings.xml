@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">Text recognition test</string>
+    <string name="hitung">Hitung</string>
+    <string name="label_detected_input">Detected Input</string>
+    <string name="label_result">Result</string>
+
+</resources>
