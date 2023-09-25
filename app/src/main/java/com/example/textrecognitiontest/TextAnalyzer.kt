@@ -2,6 +2,7 @@ package com.example.textrecognitiontest
 
 import android.content.Context
 import android.content.Intent
+import android.view.View
 import android.widget.Toast
 import androidx.camera.core.ExperimentalGetImage
 import androidx.camera.core.ImageAnalysis
@@ -14,6 +15,7 @@ import com.google.mlkit.vision.text.latin.TextRecognizerOptions
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
@@ -39,18 +41,16 @@ class TextAnalyzer : ImageAnalysis.Analyzer {
                     )
 
                     binding?.btnHitung?.setOnClickListener {
-//                        val text = getText(listTextBlock)
                         val textLines = mutableListOf<String>()
-                        println("rrrr")
                         for (block in listTextBlock) {
                             for (line in block.lines) {
                                 textLines.add(line.text)
                             }
                         }
-//                        val intent = Intent(context, TextResultActivity::class.java)
-//                        intent.putExtra("result", text)
+                        print("rrrrx $textLines\n")
                         validateLines(textLines)
-//                        context?.startActivity(intent)
+                        analyzeResult()
+
                     }
                 }
                 .addOnFailureListener {
@@ -62,38 +62,50 @@ class TextAnalyzer : ImageAnalysis.Analyzer {
         }
     }
 
-    companion object {
-        fun getText(listBlock: List<Text.TextBlock>): String {
-            var textResult = ""
-            for (block in listBlock) {
-                textResult += "\t\t"
-                for (line in block.lines) {
-                    textResult += line.text
+    fun analyzeResult() {
+        MainScope().launch {
+            binding?.inputTextView?.text = _homeUiState.collect { uiState ->
+                when (uiState.textResult) {
+                    TextResult.InitialState -> {
+                        binding?.inputTextView?.text = ""
+                        binding?.resultTextLabelView?.text = ""
+                    }
+                    is TextResult.Success -> {
+                        binding?.inputTextView?.text = uiState.textResult.input
+                        binding?.resultTextLabelView?.text =
+                            uiState.textResult.result
+
+                    }
+                    TextResult.NoResultFound -> {
+                        binding?.inputTextView?.text = "No result"
+                        binding?.resultTextLabelView?.text = "No result"
+                    }
                 }
-                textResult += "\n\n"
             }
 
-            return textResult
         }
+
     }
+
+
 
     fun validateLines(textLines: List<String>) {
         MainScope().launch(Dispatchers.IO) {
-            textLines.forEach { textLine ->
-                print("rrrr $textLine")
-                if (isInputValid(textLine.removeSpace())) {
+            val finalText = textLines[0].removeSpace()
+            finalText.forEach { textLine ->
+                if (isInputValid(finalText)) {
                     _homeUiState.update { uiState ->
+                        print("rrrr ui $uiState")
                         uiState.copy(
                             textResult = TextResult.Success(
-                                input = textLine,
-                                result = getOperationResult(textLine)
+                                input = finalText,
+                                result = getOperationResult(finalText)
                             ),
                         )
                     }
-                    print("rrrr x ${getOperationResult(textLine)}")
+                    print("rrrr x ${getOperationResult(finalText)}")
                     return@launch
                 }
-                print("rrrr asdasd")
             }
             _homeUiState.update { uiState ->
                 uiState.copy(textResult = TextResult.NoResultFound)
@@ -101,12 +113,12 @@ class TextAnalyzer : ImageAnalysis.Analyzer {
         }
     }
 
-    private fun isInputValid(input: String): Boolean {
+    fun isInputValid(input: String): Boolean {
         val splitInput = input.split('/', '*', '+', '-')
         return splitInput.size == 2 && splitInput.all { it.isDigit() && it.isNotEmpty() }
     }
 
-    private fun getOperationResult(equation: String): String {
+    fun getOperationResult(equation: String): String {
         val operands = equation.split('/', '*', '+', '-').map { it.toInt() }
         return when {
             equation.contains("+") -> {

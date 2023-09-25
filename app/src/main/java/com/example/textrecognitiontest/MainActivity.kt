@@ -4,15 +4,11 @@ import android.content.ContentValues
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
-import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.provider.MediaStore
 import android.util.Log
-import android.view.View
-import android.view.WindowManager
 import android.widget.Toast
-import androidx.annotation.RequiresApi
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ExperimentalGetImage
 import androidx.camera.core.ImageAnalysis
@@ -23,9 +19,7 @@ import androidx.core.content.ContextCompat
 import com.example.textrecognitiontest.Constants.IMAGE_PICKER_REQUEST_CODE
 import com.example.textrecognitiontest.databinding.ActivityMainBinding
 import com.google.mlkit.vision.common.InputImage
-import com.google.mlkit.vision.interfaces.Detector
 import com.google.mlkit.vision.text.TextRecognition
-import com.google.mlkit.vision.text.TextRecognizer
 import com.google.mlkit.vision.text.latin.TextRecognizerOptions
 import com.theartofdev.edmodo.cropper.CropImage
 import java.util.concurrent.ExecutorService
@@ -34,7 +28,6 @@ import java.util.concurrent.Executors
 @ExperimentalGetImage
 class MainActivity : AppCompatActivity() {
 
-    private lateinit var textRecognizer: TextRecognizer
     lateinit var binding: ActivityMainBinding
     private lateinit var cameraExecutor: ExecutorService
     private var cameraFacing = CameraSelector.DEFAULT_BACK_CAMERA
@@ -42,7 +35,6 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
-//        makeFullScreen()
         setContentView(binding.root)
         cameraExecutor = Executors.newSingleThreadExecutor()
         requestAllPermissions()
@@ -54,6 +46,8 @@ class MainActivity : AppCompatActivity() {
                 Toast.makeText(this, "App does not have permission to access your phone storage!", Toast.LENGTH_SHORT).show()
             }
         }
+
+
     }
 
     private fun requestAllPermissions() {
@@ -158,15 +152,29 @@ class MainActivity : AppCompatActivity() {
     private fun scanTextFromImage(resultUri: Uri?) {
         val bitmap = MediaStore.Images.Media.getBitmap(contentResolver, resultUri)
         val image = InputImage.fromBitmap(bitmap, 0)
+        val textAnalyzer = TextAnalyzer()
 
         val textRecognizer = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
-        val result = textRecognizer.process(image)
+        textRecognizer.process(image)
             .addOnSuccessListener {
                 val listTextBlock = it.textBlocks
-                val text = TextAnalyzer.getText(listTextBlock)
-                intent = Intent(this, TextResultActivity::class.java)
-                intent.putExtra("result", text)
-                startActivity(intent)
+                val textLines = mutableListOf<String>()
+                for (block in listTextBlock) {
+                    for (line in block.lines) {
+                        textLines.add(line.text)
+                    }
+                }
+                val finalText = textLines[0].removeSpace()
+
+                if (textAnalyzer.isInputValid(finalText)){
+                    binding.inputTextView.text = finalText
+                    binding.resultTextLabelView.text = textAnalyzer.getOperationResult(finalText)
+                }else{
+                    binding.inputTextView.text = "No result"
+                    binding.resultTextLabelView.text = "No result"
+                }
+                print("rrrr2 $textLines\n")
+
             }
             .addOnFailureListener {
                 Toast.makeText(this, it.message, Toast.LENGTH_SHORT).show()
