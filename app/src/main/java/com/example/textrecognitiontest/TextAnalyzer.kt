@@ -47,7 +47,6 @@ class TextAnalyzer : ImageAnalysis.Analyzer {
                                 textLines.add(line.text)
                             }
                         }
-                        print("rrrrx $textLines\n")
                         validateLines(textLines)
                         analyzeResult()
 
@@ -91,11 +90,13 @@ class TextAnalyzer : ImageAnalysis.Analyzer {
 
     fun validateLines(textLines: List<String>) {
         MainScope().launch(Dispatchers.IO) {
-            val finalText = textLines[0].removeSpace()
+            var finalText = ""
+            if (textLines[0].isNotEmpty()){
+                finalText = textLines[0].removeSpace()
+            }
             finalText.forEach { textLine ->
                 if (isInputValid(finalText)) {
                     _homeUiState.update { uiState ->
-                        print("rrrr ui $uiState")
                         uiState.copy(
                             textResult = TextResult.Success(
                                 input = finalText,
@@ -103,7 +104,6 @@ class TextAnalyzer : ImageAnalysis.Analyzer {
                             ),
                         )
                     }
-                    print("rrrr x ${getOperationResult(finalText)}")
                     return@launch
                 }
             }

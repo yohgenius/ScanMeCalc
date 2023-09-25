@@ -3,11 +3,14 @@ package com.example.textrecognitiontest
 import android.content.ContentValues
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.graphics.Color
+import android.graphics.drawable.ColorDrawable
 import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.provider.MediaStore
 import android.util.Log
+import android.view.View
 import android.widget.Toast
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ExperimentalGetImage
@@ -39,11 +42,44 @@ class MainActivity : AppCompatActivity() {
         cameraExecutor = Executors.newSingleThreadExecutor()
         requestAllPermissions()
 
+        if (BuildConfig.FLAVOR_THEME == "green") {
+            binding.btnHitung.setBackgroundColor(resources.getColor(R.color.green_dark, null))
+            binding.buttonPickImage.setBackgroundColor(resources.getColor(R.color.green_dark, null))
+            supportActionBar?.setBackgroundDrawable(ColorDrawable(getColor(R.color.green_dark)))
+            window.statusBarColor = resources.getColor(R.color.green_dark, null)
+            binding.imagePlaceholder.setBackgroundColor(resources.getColor(R.color.green_dark, null))
+        } else {
+            binding.btnHitung.setBackgroundColor(resources.getColor(R.color.red, null))
+            binding.buttonPickImage.setBackgroundColor(resources.getColor(R.color.red, null))
+            supportActionBar?.setBackgroundDrawable(ColorDrawable(getColor(R.color.red)))
+            window.statusBarColor = resources.getColor(R.color.red, null)
+            binding.imagePlaceholder.setBackgroundColor(resources.getColor(R.color.red, null))
+        }
+
+        if (BuildConfig.FLAVOR_TYPE == "camera"){
+            binding.btnHitung.visibility = View.VISIBLE
+            binding.buttonPickImage.visibility = View.GONE
+            binding.imagePlaceholder.visibility = View.GONE
+            binding.textBoxOverlay.visibility = View.VISIBLE
+            binding.camPreview.visibility = View.VISIBLE
+        }else{
+            binding.btnHitung.visibility = View.GONE
+            binding.buttonPickImage.visibility = View.VISIBLE
+            binding.imagePlaceholder.visibility = View.VISIBLE
+            binding.textBoxOverlay.visibility = View.GONE
+            binding.camPreview.visibility = View.GONE
+        }
+
+
         binding.buttonPickImage.setOnClickListener {
             if (checkPermission()) {
                 openImagePicker()
             } else {
-                Toast.makeText(this, "App does not have permission to access your phone storage!", Toast.LENGTH_SHORT).show()
+                Toast.makeText(
+                    this,
+                    "App does not have permission to access your phone storage!",
+                    Toast.LENGTH_SHORT
+                ).show()
             }
         }
 
@@ -119,11 +155,16 @@ class MainActivity : AppCompatActivity() {
                 Toast.makeText(this, "Camera permission granted!", Toast.LENGTH_SHORT).show()
                 startCamera()
             } else {
-                Toast.makeText(this, "App does not have permission to access camera!", Toast.LENGTH_SHORT).show()
+                Toast.makeText(
+                    this,
+                    "App does not have permission to access camera!",
+                    Toast.LENGTH_SHORT
+                ).show()
                 finish()
             }
         }
     }
+
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == IMAGE_PICKER_REQUEST_CODE && resultCode == RESULT_OK) {
@@ -153,6 +194,7 @@ class MainActivity : AppCompatActivity() {
         val bitmap = MediaStore.Images.Media.getBitmap(contentResolver, resultUri)
         val image = InputImage.fromBitmap(bitmap, 0)
         val textAnalyzer = TextAnalyzer()
+        binding.imagePlaceholder.setImageBitmap(bitmap)
 
         val textRecognizer = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
         textRecognizer.process(image)
@@ -164,16 +206,17 @@ class MainActivity : AppCompatActivity() {
                         textLines.add(line.text)
                     }
                 }
-                val finalText = textLines[0].removeSpace()
-
-                if (textAnalyzer.isInputValid(finalText)){
+                var finalText = ""
+                if (textLines[0].isNotEmpty()) {
+                    finalText = textLines[0].removeSpace()
+                }
+                if (textAnalyzer.isInputValid(finalText)) {
                     binding.inputTextView.text = finalText
                     binding.resultTextLabelView.text = textAnalyzer.getOperationResult(finalText)
-                }else{
+                } else {
                     binding.inputTextView.text = "No result"
                     binding.resultTextLabelView.text = "No result"
                 }
-                print("rrrr2 $textLines\n")
 
             }
             .addOnFailureListener {

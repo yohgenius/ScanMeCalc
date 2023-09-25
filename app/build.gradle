@@ -34,6 +34,26 @@ android {
     buildFeatures {
         viewBinding = true
     }
+
+    flavorDimensions "THEME", "TYPE"
+    productFlavors {
+        red {
+            dimension "THEME"
+            versionNameSuffix "-red"
+        }
+        green {
+            dimension "THEME"
+            versionNameSuffix "-green"
+        }
+        fileSytem {
+            dimension "TYPE"
+            versionNameSuffix "-filesytem"
+        }
+        camera {
+            dimension "TYPE"
+            versionNameSuffix "-built-in-camera"
+        }
+    }
 }
 
 dependencies {
